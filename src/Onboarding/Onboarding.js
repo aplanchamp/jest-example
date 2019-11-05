@@ -1,12 +1,15 @@
 import React, { Component } from "react";
-
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { Binder, getBinderSelectedId } from 'react-keys';
 import { replace } from "../utils";
+
 
 class Onboarding extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentSlideIndex: 0
+      currentSlideIndex: 0,
     };
   }
 
@@ -23,6 +26,16 @@ class Onboarding extends Component {
   next = () => {
     this.setState({ currentSlideIndex: this.state.currentSlideIndex + 1 });
   };
+
+  onSelect(id) {
+    switch (id) {
+      case 'btn_id':
+          this.setState({ currentSlideIndex: this.state.currentSlideIndex + 1 });
+        break;
+      default:
+        break;
+    }
+  }
 
   render() {
     const { startupNotification } = this.props;
@@ -47,7 +60,7 @@ class Onboarding extends Component {
     switch (displayTemplate) {
       case "slideShow":
         return (
-          <div>
+          <div id='rt' title="test">
             <img
               className="slideShow-image"
               src={currentSlideImgSrc}
@@ -55,6 +68,19 @@ class Onboarding extends Component {
             />
             <button onClick={this.next}>Next</button>
             <button onClick={this.onLeaveOnboarding}>Leave</button>
+            <Binder
+              id="btn_binder"
+              selector="button"
+              memory={true}
+              onEnter={({ id }) => this.onSelect(
+                id,
+              )}
+            >
+                <button
+                  id="btn_id"
+                  selected={this.props.selectedId === 'btn_id'}
+                >Test</button>
+            </Binder>
           </div>
         );
 
@@ -64,4 +90,8 @@ class Onboarding extends Component {
   }
 }
 
-export default Onboarding;
+const mapStateToProps = createStructuredSelector({
+  selectedId: getBinderSelectedId('btn_binder'),
+});
+
+export default connect(mapStateToProps)(Onboarding);
