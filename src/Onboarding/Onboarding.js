@@ -1,15 +1,14 @@
 import React, { Component } from "react";
-import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
-import { Binder, getBinderSelectedId } from 'react-keys';
+import { connect } from "react-redux";
+import { createStructuredSelector } from "reselect";
+import { Binder, getBinderSelectedId, getCurrentBinderId } from "react-keys";
 import { replace } from "../utils";
-
 
 class Onboarding extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentSlideIndex: 0,
+      currentSlideIndex: 0
     };
   }
 
@@ -27,18 +26,18 @@ class Onboarding extends Component {
     this.setState({ currentSlideIndex: this.state.currentSlideIndex + 1 });
   };
 
-  onSelect(id) {
+  onSelect = ({ id }) => {
     switch (id) {
-      case 'btn_id':
-          this.setState({ currentSlideIndex: this.state.currentSlideIndex + 1 });
+      case "btn_id":
+        this.setState({ currentSlideIndex: this.state.currentSlideIndex + 1 });
         break;
       default:
         break;
     }
-  }
+  };
 
   render() {
-    const { startupNotification } = this.props;
+    const { startupNotification, selectedId, currentBinder } = this.props;
     const currentPage = startupNotification && startupNotification.currentPage;
     return currentPage
       ? this.renderTemplateComponent(
@@ -60,7 +59,7 @@ class Onboarding extends Component {
     switch (displayTemplate) {
       case "slideShow":
         return (
-          <div id='rt' title="test">
+          <div id="rt" title="test">
             <img
               className="slideShow-image"
               src={currentSlideImgSrc}
@@ -71,15 +70,16 @@ class Onboarding extends Component {
             <Binder
               id="btn_binder"
               selector="button"
-              memory={true}
-              onEnter={({ id }) => this.onSelect(
-                id,
-              )}
+              onEnter={this.onSelect}
+              active={true}
             >
-                <button
-                  id="btn_id"
-                  selected={this.props.selectedId === 'btn_id'}
-                >Test</button>
+              <button
+                data-testid="custom-element"
+                id="btn_id"
+                selected={this.props.selectedId === "btn_id"}
+              >
+                Enter
+              </button>
             </Binder>
           </div>
         );
@@ -91,7 +91,8 @@ class Onboarding extends Component {
 }
 
 const mapStateToProps = createStructuredSelector({
-  selectedId: getBinderSelectedId('btn_binder'),
+  selectedId: getBinderSelectedId("btn_binder"),
+  currentBinder: getCurrentBinderId()
 });
 
 export default connect(mapStateToProps)(Onboarding);

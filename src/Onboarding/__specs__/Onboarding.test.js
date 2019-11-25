@@ -5,15 +5,15 @@ import { render, fireEvent } from "@testing-library/react";
 import { startupNotification } from "../mocks";
 
 import * as utils from "../../utils";
-import {createStore} from 'redux'
-import {Provider} from 'react-redux'
-import { keysInit } from 'react-keys';
-import IndexReducer from '../../index.reducers'
-import { keysHandler } from "react-keys/build/components/binder/handler"
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import { keysInit } from "react-keys";
+import IndexReducer from "../../index.reducers";
+import { fireBinderEvent } from "../../helper";
 
 function renderWithRedux(
   ui,
-  {initialState, store = createStore(IndexReducer, initialState)} = {},
+  { initialState, store = createStore(IndexReducer, initialState) } = {}
 ) {
   keysInit({ store: store });
   return {
@@ -21,37 +21,11 @@ function renderWithRedux(
     // adding `store` to the returned utilities to allow us
     // to reference it in our tests (just try to avoid using
     // this to test implementation details).
-    store,
-  }
+    store
+  };
 }
 
 describe.only("Onboarding component", () => {
-  describe("Snapshots", () => {
-    it("should render snapshot - react-test-renderer", () => {
-      const renderer = ReactTestRenderer.create(
-        <Onboarding startupNotification={startupNotification} />
-      );
-      expect(renderer.toJSON()).toMatchSnapshot();
-    });
-
-    it("should render snapshot - @testing-library/react", () => {
-      const { asFragment } = render(
-        <Onboarding startupNotification={startupNotification} />
-      );
-      expect(asFragment()).toMatchSnapshot();
-    });
-
-    it("should render null - react-test-renderer", () => {
-      const renderer = ReactTestRenderer.create(<Onboarding />);
-      expect(renderer.toJSON()).toMatchSnapshot();
-    });
-
-    it("should render null  - @testing-library/react", () => {
-      const { asFragment } = render(<Onboarding />);
-      expect(asFragment()).toMatchSnapshot();
-    });
-  });
-
   it("should redirect to home", () => {
     const spy = jest.spyOn(utils, "replace");
     renderWithRedux(<Onboarding onboardingShouldNotBeDisplayed />);
@@ -73,7 +47,7 @@ describe.only("Onboarding component", () => {
   });
 
   it("should update the displayed image if the user clicks the 'Next' button", () => {
-    const { getByText, getByAltText } = render(
+    const { getByText, getByAltText } = renderWithRedux(
       <Onboarding startupNotification={startupNotification} />
     );
     const imgNode = getByAltText("onboarding-img");
@@ -84,36 +58,12 @@ describe.only("Onboarding component", () => {
     );
   });
 
-  it.only("should update the displayed image if the user clicks the 'Test' button", () => {
-    const { getByAltText } = renderWithRedux(
+  it("should update the displayed image if the user clicks the 'Test' button", async () => {
+    const { getByAltText, getByText } = renderWithRedux(
       <Onboarding startupNotification={startupNotification} />
     );
     const imgNode = getByAltText("onboarding-img");
-
-    // fireEvent.keyPress(getByTitle(/Test/i), { key: 'Enter', code: 13 });
-    const innerProps = {
-      id: "btn_binder",
-      selector: "button",
-      active: true,
-      boundedGap: 0,
-      downGap: 0,
-      filter: null,
-      gap: 0,
-      leftGap: 0,
-      longPress: true,
-      memory: true,
-      onEnter: () => 
-      fireEvent.change(
-        getByAltText("onboarding-img"),
-        { target: { src: "https://thumb.canalplus.pro/bran/unsafe/450x200/image/44/2/2_onboarding.59442.jpg" } }),
-      priority: 0,
-      refreshStrategy: "first",
-      rightGap: 0,
-      strategy: "none",
-      topGap: 0,
-      triggerClick: true,
-    }
-    keysHandler(13, false, false, innerProps)
+    fireBinderEvent(getByText(/Enter/i), 13);
 
     expect(imgNode.src).toEqual(
       "https://thumb.canalplus.pro/bran/unsafe/450x200/image/44/2/2_onboarding.59442.jpg"
